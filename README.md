@@ -6,8 +6,9 @@ Convert a markdown file to PDF.
 
 `md2pdf.sh` is a small bash script that converts markdown to PDF in two steps:
 
-1. Python's [markdown](https://python-markdown.github.io/) module converts
-the markdown to HTML (with a simple, GitHub-like built-in style sheet).
+1. Python's [markdown-it-py](https://github.com/executablebooks/markdown-it-py)
+module (`markdown_it`) converts the markdown to HTML (with a simple,
+GitHub-like built-in style sheet).
 2. A headless chromium-compatible browser (Chromium, Chrome, or Edge)
 "prints" the HTML to PDF.
 
@@ -15,11 +16,17 @@ The intermediate HTML file is written to the same directory as the input
 file so that relative image links work. It is deleted afterward unless
 `-k` is given.
 
+I wanted something lighter-weight than pandoc that didn't require installing anything more than I already had.
+
 ### Dependencies
 
 * bash
-* python3 with the `markdown` module (`pip install markdown`, or
-`sudo apt install python3-markdown`).
+* python3 with the `markdown_it` and `mdit_py_plugins` modules.
+On Ubuntu/Debian (including WSL):
+```
+sudo apt install python3-markdown-it python3-mdit-py-plugins
+```
+(or `pip install markdown-it-py mdit-py-plugins` where pip is allowed).
 * A chromium-compatible browser. The script searches for (in order):
 `chromium`, `chromium-browser`, `google-chrome`, `google-chrome-stable`,
 and, under WSL, Windows Chrome and Edge in their standard install locations.
@@ -50,9 +57,14 @@ MD2PDF_BROWSER=/usr/bin/chromium md2pdf.sh notes.md
 
 ## Notes
 
-* Markdown extensions used: `extra` (tables, fenced code, footnotes,
-attribute lists, etc.), `sane_lists`, and `toc` (adds `id` attributes to
-headings so in-document links work).
+* The goal is output that matches GitHub's rendering. The parser is
+CommonMark (the basis of GitHub Flavored Markdown) plus tables,
+strikethrough, task lists, footnotes, and heading anchors whose `id`s
+follow GitHub's rules, so in-document links (e.g. a table of contents
+from [mdtoc](https://github.com/fordsfords/mdtoc)) work in the PDF.
+* Bare URLs (e.g. `http://example.com` without `<...>` or `[...](...)`)
+are not turned into links, unlike on GitHub. That needs the
+`linkify-it-py` module, which is not packaged for Ubuntu 22.04.
 * The browser's default page header and footer (date, title, URL,
 page numbers) are suppressed.
 * Under WSL, a Windows browser is given Windows-style paths

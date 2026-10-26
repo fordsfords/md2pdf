@@ -1,6 +1,7 @@
 #!/bin/bash
 # md2pdf.sh - convert a markdown file to PDF.
-# Uses python's "markdown" module to make HTML, then headless chromium
+# Uses python's "markdown_it" module (CommonMark plus GitHub extensions) to
+# make HTML, then headless chromium
 # (or Chrome/Edge) to print the HTML to PDF.
 # See https://github.com/fordsfords/md2pdf
 
@@ -71,9 +72,13 @@ if [ "$KEEP_HTML" -eq 0 ]; then trap 'rm -f "$HTML_FILE"' EXIT; fi
 python3 - "$IN_FILE" "$HTML_FILE" "$CSS_FILE" <<'__EOF__'
 import sys, html
 try:
-    import markdown
+    from markdown_it import MarkdownIt
+    from mdit_py_plugins.anchors import anchors_plugin
+    from mdit_py_plugins.footnote import footnote_plugin
+    from mdit_py_plugins.tasklists import tasklists_plugin
 except ImportError:
-    sys.exit("md2pdf.sh: python 'markdown' module not found; try 'pip install markdown'")
+    sys.exit("md2pdf.sh: python 'markdown_it' or 'mdit_py_plugins' module not found; "
+             "try 'sudo apt install python3-markdown-it python3-mdit-py-plugins'")
 
 in_file, html_file, css_file = sys.argv[1:4]
 
@@ -91,6 +96,8 @@ th, td { border: 1px solid #d0d7de; padding: .3em .7em; }
 th { background: #f6f8fa; }
 blockquote { color: #57606a; border-left: .25em solid #d0d7de; margin-left: 0; padding-left: 1em; }
 img { max-width: 100%; }
+.contains-task-list { list-style: none; padding-left: 1.2em; }
+.footnotes { font-size: 90%; }
 pre, table, img, blockquote { page-break-inside: avoid; }
 h1, h2, h3, h4 { page-break-after: avoid; }
 """
@@ -103,7 +110,14 @@ if css_file:
 else:
     css = DEFAULT_CSS
 
-body = markdown.markdown(md_text, extensions=["extra", "sane_lists", "toc"])
+# Approximate GitHub: CommonMark + tables, strikethrough, task lists,
+# footnotes, and GitHub-style heading anchors.
+md = (MarkdownIt("commonmark")
+      .enable(["table", "strikethrough"])
+      .use(anchors_plugin, max_level=6)
+      .use(footnote_plugin)
+      .use(tasklists_plugin))
+body = md.render(md_text)
 title = html.escape(in_file)
 with open(html_file, "w", encoding="utf-8") as f:
     f.write(f"""<!DOCTYPE html>

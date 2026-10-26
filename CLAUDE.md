@@ -5,8 +5,8 @@ Guidance for Claude when maintaining this repository.
 ## Project
 
 `md2pdf.sh` is a single bash script that converts markdown to PDF:
-an embedded python3 program (heredoc) uses the `markdown` module to write
-an HTML file, then a headless chromium-compatible browser prints it to PDF.
+an embedded python3 program (heredoc) uses the `markdown_it` module
+(markdown-it-py, plus `mdit_py_plugins`) to write an HTML file, then a headless chromium-compatible browser prints it to PDF.
 Repo: git@github.com:fordsfords/md2pdf.git (branch `main`).
 
 Files:
@@ -24,7 +24,13 @@ rewrite published history.
 ## Maintenance rules
 
 * Keep it a single self-contained bash script; avoid new dependencies
-beyond bash, python3 + `markdown`, and a chromium-compatible browser.
+beyond bash, python3 + `markdown_it` + `mdit_py_plugins`, and a
+chromium-compatible browser. Dependencies must be installable with apt;
+the user cannot use pip on WSL/Ubuntu. Code must work with the Ubuntu
+22.04 packages (markdown-it-py 1.1.0, mdit-py-plugins 0.3.0).
+* Rendering should match GitHub as closely as practical (the user's
+markdown lives on GitHub). Heading `id`s must match GitHub's so mdtoc
+links resolve.
 * Keep the `usage()` text in `md2pdf.sh` and the Usage section of
 `README.md` identical. Update README when options, dependencies, or
 behavior change.
