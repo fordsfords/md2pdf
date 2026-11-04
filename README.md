@@ -1,13 +1,13 @@
 # md2pdf
 
-Convert a markdown file to PDF.
+Convert a markdown file to PDF (`md2pdf.sh`) or HTML (`md2html.sh`).
 
 ## Introduction
 
 `md2pdf.sh` is a small bash script that converts markdown to PDF in two steps:
 
-1. Python's [markdown-it-py](https://github.com/executablebooks/markdown-it-py)
-module (`markdown_it`) converts the markdown to HTML (with a simple,
+1. `md2html.sh` uses Python's [markdown-it-py](https://github.com/executablebooks/markdown-it-py)
+module (`markdown_it`) to convert the markdown to HTML (with a simple,
 GitHub-like built-in style sheet).
 2. A headless chromium-compatible browser (Chromium, Chrome, or Edge)
 "prints" the HTML to PDF.
@@ -15,6 +15,13 @@ GitHub-like built-in style sheet).
 The intermediate HTML file is written to the same directory as the input
 file so that relative image links work. It is deleted afterward unless
 `-k` is given.
+
+If you want HTML rather than PDF, run `md2html.sh` directly; it does
+step 1 only and does not need a browser. Keep the HTML in the same
+directory as the markdown (the default) so that relative image links work.
+
+Install both scripts in the same directory (`md2pdf.sh` looks for
+`md2html.sh` next to itself, then on your PATH).
 
 I wanted something lighter-weight than pandoc that didn't require installing anything more than I already had.
 
@@ -27,7 +34,7 @@ On Ubuntu/Debian (including WSL):
 sudo apt install python3-markdown-it python3-mdit-py-plugins
 ```
 (or `pip install markdown-it-py mdit-py-plugins` where pip is allowed).
-* A chromium-compatible browser. The script searches for (in order):
+* A chromium-compatible browser (`md2pdf.sh` only). The script searches for (in order):
 `chromium`, `chromium-browser`, `google-chrome`, `google-chrome-stable`,
 and, under WSL, Windows Chrome and Edge in their standard install locations.
 Set the `MD2PDF_BROWSER` environment variable to override the search.
@@ -46,6 +53,15 @@ Environment:
   MD2PDF_BROWSER : path to chromium-compatible browser (overrides search).
 ```
 
+```
+Usage: md2html.sh [-h] [-c css_file] [-o out.html] in.md
+Where:
+  -h : print help.
+  -c css_file : use css_file instead of the built-in style sheet.
+  -o out.html : output file (default: in.md with .md replaced by .html).
+  in.md : input markdown file.
+```
+
 ### Examples
 
 ```
@@ -53,6 +69,7 @@ md2pdf.sh README.md                 # creates README.pdf
 md2pdf.sh -o /tmp/doc.pdf notes.md  # explicit output file
 md2pdf.sh -c my.css -k notes.md     # custom style; keep notes.html
 MD2PDF_BROWSER=/usr/bin/chromium md2pdf.sh notes.md
+md2html.sh notes.md                 # creates notes.html
 ```
 
 ## Notes

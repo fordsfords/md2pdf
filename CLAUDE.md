@@ -4,13 +4,17 @@ Guidance for Claude when maintaining this repository.
 
 ## Project
 
-`md2pdf.sh` is a single bash script that converts markdown to PDF:
-an embedded python3 program (heredoc) uses the `markdown_it` module
-(markdown-it-py, plus `mdit_py_plugins`) to write an HTML file, then a headless chromium-compatible browser prints it to PDF.
+`md2html.sh` converts markdown to HTML: an embedded python3 program
+(heredoc) uses the `markdown_it` module (markdown-it-py, plus
+`mdit_py_plugins`). `md2pdf.sh` calls `md2html.sh` (found next to itself,
+else on PATH) to write a temp HTML file, then a headless
+chromium-compatible browser prints it to PDF. The HTML generation code
+lives only in `md2html.sh`; don't duplicate it.
 Repo: git@github.com:fordsfords/md2pdf.git (branch `main`).
 
 Files:
-* `md2pdf.sh` - the tool.
+* `md2pdf.sh` - markdown to PDF.
+* `md2html.sh` - markdown to HTML (also used by `md2pdf.sh`).
 * `README.md` - user documentation.
 * `LICENSE` - CC0.
 
@@ -23,7 +27,7 @@ rewrite published history.
 
 ## Maintenance rules
 
-* Keep it a single self-contained bash script; avoid new dependencies
+* Keep each tool a self-contained bash script; avoid new dependencies
 beyond bash, python3 + `markdown_it` + `mdit_py_plugins`, and a
 chromium-compatible browser. Dependencies must be installable with apt;
 the user cannot use pip on WSL/Ubuntu. Code must work with the Ubuntu
@@ -31,7 +35,7 @@ the user cannot use pip on WSL/Ubuntu. Code must work with the Ubuntu
 * Rendering should match GitHub as closely as practical (the user's
 markdown lives on GitHub). Heading `id`s must match GitHub's so mdtoc
 links resolve.
-* Keep the `usage()` text in `md2pdf.sh` and the Usage section of
+* Keep the `usage()` text in each script and the Usage section of
 `README.md` identical. Update README when options, dependencies, or
 behavior change.
 * The script must keep working both on native Linux (chromium) and under
@@ -53,6 +57,7 @@ There is no automated test suite. Before committing, at minimum:
 ./md2pdf.sh -k some.md        # check some.pdf and some.html are produced
 ./md2pdf.sh -o /tmp/x.pdf some.md
 ./md2pdf.sh nonexistent.md    # should print an error and exit 1
+./md2html.sh some.md          # check some.html is produced
 ```
 
 Visually check the PDF (e.g. `pdftoppm -png -r 50 -f 1 -l 1 x.pdf p` and
