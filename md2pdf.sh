@@ -43,12 +43,23 @@ if [ -z "$OUT_FILE" ]; then OUT_FILE="${IN_FILE%.md}.pdf"; fi
 # Find a browser.
 BROWSER="$MD2PDF_BROWSER"
 if [ -z "$BROWSER" ]; then
-  for B in chromium chromium-browser google-chrome google-chrome-stable \
-      "/mnt/c/Program Files/Google/Chrome/Application/chrome.exe" \
-      "/mnt/c/Program Files (x86)/Google/Chrome/Application/chrome.exe" \
-      "/mnt/c/Program Files (x86)/Microsoft/Edge/Application/msedge.exe"; do
+  LINUX_BROWSERS="chromium chromium-browser google-chrome google-chrome-stable"
+  WIN_BROWSERS="/mnt/c/Program Files/Google/Chrome/Application/chrome.exe
+/mnt/c/Program Files (x86)/Google/Chrome/Application/chrome.exe
+/mnt/c/Program Files (x86)/Microsoft/Edge/Application/msedge.exe"
+  # Under WSL, prefer the Windows browsers (the snap chromium fails there).
+  if grep -qi microsoft /proc/version 2>/dev/null; then
+    CANDIDATES="$WIN_BROWSERS
+$(echo $LINUX_BROWSERS | tr ' ' '\n')"
+  else
+    CANDIDATES="$(echo $LINUX_BROWSERS | tr ' ' '\n')
+$WIN_BROWSERS"
+  fi
+  while IFS= read -r B; do
     if command -v "$B" >/dev/null 2>&1; then BROWSER="$B"; break; fi
-  done
+  done <<__EOF__
+$CANDIDATES
+__EOF__
 fi
 if [ -z "$BROWSER" ]; then
   echo "md2pdf.sh: no chromium-compatible browser found; set MD2PDF_BROWSER" 1>&2

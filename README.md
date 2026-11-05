@@ -37,6 +37,8 @@ sudo apt install python3-markdown-it python3-mdit-py-plugins
 * A chromium-compatible browser (`md2pdf.sh` only). The script searches for (in order):
 `chromium`, `chromium-browser`, `google-chrome`, `google-chrome-stable`,
 and, under WSL, Windows Chrome and Edge in their standard install locations.
+Under WSL the Windows browsers are tried first, because the snap
+`chromium` does not work there.
 Set the `MD2PDF_BROWSER` environment variable to override the search.
 
 ## Usage
