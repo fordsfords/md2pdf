@@ -74,6 +74,17 @@ MD2PDF_BROWSER=/usr/bin/chromium md2pdf.sh notes.md
 md2html.sh notes.md                 # creates notes.html
 ```
 
+## Testing
+
+`tst.sh` is a self-test of both scripts (it needs a browser, like
+`md2pdf.sh`). It works in a temporary directory, prints one line per
+check, and exits non-zero if any check fails:
+```
+./tst.sh
+```
+If `pdftotext` (Ubuntu package `poppler-utils`) is installed, it also
+checks the text of the PDF.
+
 ## Notes
 
 * The goal is output that matches GitHub's rendering. The parser is

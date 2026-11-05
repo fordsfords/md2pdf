@@ -15,6 +15,7 @@ Repo: git@github.com:fordsfords/md2pdf.git (branch `main`).
 Files:
 * `md2pdf.sh` - markdown to PDF.
 * `md2html.sh` - markdown to HTML (also used by `md2pdf.sh`).
+* `tst.sh` - self-test of both scripts.
 * `README.md` - user documentation.
 * `LICENSE` - CC0.
 
@@ -51,14 +52,11 @@ messages prefixed with `md2pdf.sh:` on stderr, non-zero exit on failure.
 
 ## Testing
 
-There is no automated test suite. Before committing, at minimum:
-
-```
-./md2pdf.sh -k some.md        # check some.pdf and some.html are produced
-./md2pdf.sh -o /tmp/x.pdf some.md
-./md2pdf.sh nonexistent.md    # should print an error and exit 1
-./md2html.sh some.md          # check some.html is produced
-```
+Before committing, run `./tst.sh`; it must report 0 failures. It covers
+output files, `-c`/`-k`/`-o`, error exits, temp-file cleanup, GitHub
+heading ids, PDF text (if `pdftotext` is installed), and that each
+`usage()` text appears in README. Add checks to `tst.sh` when adding
+options or behavior.
 
 Visually check the PDF (e.g. `pdftoppm -png -r 50 -f 1 -l 1 x.pdf p` and
 view the image) when changing CSS or browser flags. Confirm no stray
