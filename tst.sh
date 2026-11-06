@@ -91,6 +91,28 @@ check "md2html -o writes named file" [ -s "$TST_DIR/c.html" ]
 check "md2html -c uses css file" has "$TST_DIR/c.html" '#123456'
 check "md2html -c replaces built-in css" lacks "$TST_DIR/c.html" 'border-collapse'
 
+cat >"$TST_DIR/in/l.md" <<'__EOF__'
+[a](other.md) [b](../d/other.md#setup) [c](other.MD?x=1)
+[d](https://example.com/other.md) <a href="raw.md">e</a>
+[f](other.txt) [g][ref] [h](#local)
+
+[ref]: refd.md
+__EOF__
+"$MD2HTML" "$TST_DIR/in/l.md"; RC=$?
+check "md2html without -l exits 0" [ $RC -eq 0 ]
+check "no -l: .md link unchanged" has "$TST_DIR/in/l.html" '<a href="other.md">a</a>'
+"$MD2HTML" -l "$TST_DIR/in/l.md"; RC=$?
+L="$TST_DIR/in/l.html"
+check "md2html -l exits 0" [ $RC -eq 0 ]
+check "-l: rewrites .md link" has "$L" '<a href="other.html">a</a>'
+check "-l: keeps path and fragment" has "$L" '<a href="../d/other.html#setup">b</a>'
+check "-l: .MD and query" has "$L" '<a href="other.html?x=1">c</a>'
+check "-l: absolute URL unchanged" has "$L" '<a href="https://example.com/other.md">d</a>'
+check "-l: raw html unchanged" has "$L" '<a href="raw.md">e</a>'
+check "-l: non-.md link unchanged" has "$L" '<a href="other.txt">f</a>'
+check "-l: reference link" has "$L" '<a href="refd.html">g</a>'
+check "-l: local anchor unchanged" has "$L" '<a href="#local">h</a>'
+
 "$MD2HTML" "$TST_DIR/nonexistent.md" 2>"$TST_DIR/err"; RC=$?
 check "md2html missing input exits 1" [ $RC -eq 1 ]
 check "md2html missing input message" has "$TST_DIR/err" "md2html.sh: cannot read"

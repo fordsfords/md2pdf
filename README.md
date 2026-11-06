@@ -56,9 +56,10 @@ Environment:
 ```
 
 ```
-Usage: md2html.sh [-h] [-c css_file] [-o out.html] in.md
+Usage: md2html.sh [-h] [-l] [-c css_file] [-o out.html] in.md
 Where:
   -h : print help.
+  -l : rewrite relative links to .md files to .html (see README).
   -c css_file : use css_file instead of the built-in style sheet.
   -o out.html : output file (default: in.md with .md replaced by .html).
   in.md : input markdown file.
@@ -72,6 +73,7 @@ md2pdf.sh -o /tmp/doc.pdf notes.md  # explicit output file
 md2pdf.sh -c my.css -k notes.md     # custom style; keep notes.html
 MD2PDF_BROWSER=/usr/bin/chromium md2pdf.sh notes.md
 md2html.sh notes.md                 # creates notes.html
+md2html.sh -l notes.md              # links to other.md go to other.html
 ```
 
 ## Testing
@@ -95,6 +97,16 @@ from [mdtoc](https://github.com/fordsfords/mdtoc)) work in the PDF.
 * Bare URLs (e.g. `http://example.com` without `<...>` or `[...](...)`)
 are not turned into links, unlike on GitHub. That needs the
 `linkify-it-py` module, which is not packaged for Ubuntu 22.04.
+* `md2html.sh -l` is for a set of markdown files that are all converted
+to HTML and published together. It rewrites relative links to `.md`
+files so they point to the `.html` files instead, e.g. `[x](other.md)`
+becomes `other.html` and `[x](../doc/other.md#setup)` becomes
+`../doc/other.html#setup`. To keep a particular link pointing at the
+`.md` file (for example, one with no HTML version), write it either as
+an absolute URL, e.g.
+`[x](https://github.com/you/repo/blob/main/other.md)`, or as a raw
+HTML tag, e.g. `<a href="other.md">x</a>`. Both render normally on
+GitHub; `-l` changes neither.
 * The browser's default page header and footer (date, title, URL,
 page numbers) are suppressed.
 * Under WSL, a Windows browser is given Windows-style paths
