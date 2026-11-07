@@ -44,24 +44,26 @@ Set the `MD2PDF_BROWSER` environment variable to override the search.
 ## Usage
 
 ```
-Usage: md2pdf.sh [-h] [-k] [-c css_file] [-o out.pdf] in.md
+Usage: md2pdf.sh [-h] [-k] [-c css_file] [-o out.pdf] [-t title] in.md
 Where:
   -h : print help.
   -k : keep the intermediate HTML file (written next to the PDF).
   -c css_file : use css_file instead of the built-in style sheet.
   -o out.pdf : output file (default: in.md with .md replaced by .pdf).
+  -t title : document title (PDF metadata; default: in.md).
   in.md : input markdown file.
 Environment:
   MD2PDF_BROWSER : path to chromium-compatible browser (overrides search).
 ```
 
 ```
-Usage: md2html.sh [-h] [-l] [-c css_file] [-o out.html] in.md
+Usage: md2html.sh [-h] [-l] [-c css_file] [-o out.html] [-t title] in.md
 Where:
   -h : print help.
   -l : rewrite relative links to .md files to .html (see README).
   -c css_file : use css_file instead of the built-in style sheet.
   -o out.html : output file (default: in.md with .md replaced by .html).
+  -t title : HTML title (default: in.md).
   in.md : input markdown file.
 ```
 
@@ -74,6 +76,7 @@ md2pdf.sh -c my.css -k notes.md     # custom style; keep notes.html
 MD2PDF_BROWSER=/usr/bin/chromium md2pdf.sh notes.md
 md2html.sh notes.md                 # creates notes.html
 md2html.sh -l notes.md              # links to other.md go to other.html
+md2pdf.sh -t "Release Notes" notes.md  # title in PDF metadata
 ```
 
 ## Testing

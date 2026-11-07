@@ -6,12 +6,13 @@
 
 usage() {
   cat <<__EOF__ 1>&2
-Usage: md2html.sh [-h] [-l] [-c css_file] [-o out.html] in.md
+Usage: md2html.sh [-h] [-l] [-c css_file] [-o out.html] [-t title] in.md
 Where:
   -h : print help.
   -l : rewrite relative links to .md files to .html (see README).
   -c css_file : use css_file instead of the built-in style sheet.
   -o out.html : output file (default: in.md with .md replaced by .html).
+  -t title : HTML title (default: in.md).
   in.md : input markdown file.
 __EOF__
   exit 1
@@ -19,13 +20,15 @@ __EOF__
 
 OUT_FILE=""
 CSS_FILE=""
+TITLE=""
 LINK_REWRITE=0
-while getopts "hlc:o:" OPTION; do
+while getopts "hlc:o:t:" OPTION; do
   case $OPTION in
     h) usage ;;
     l) LINK_REWRITE=1 ;;
     c) CSS_FILE="$OPTARG" ;;
     o) OUT_FILE="$OPTARG" ;;
+    t) TITLE="$OPTARG" ;;
     *) usage ;;
   esac
 done
@@ -36,8 +39,9 @@ IN_FILE="$1"
 if [ ! -r "$IN_FILE" ]; then echo "md2html.sh: cannot read '$IN_FILE'" 1>&2; exit 1; fi
 if [ -n "$CSS_FILE" -a ! -r "$CSS_FILE" ]; then echo "md2html.sh: cannot read '$CSS_FILE'" 1>&2; exit 1; fi
 if [ -z "$OUT_FILE" ]; then OUT_FILE="${IN_FILE%.md}.html"; fi
+if [ -z "$TITLE" ]; then TITLE="$IN_FILE"; fi
 
-python3 - "$IN_FILE" "$OUT_FILE" "$CSS_FILE" "$LINK_REWRITE" <<'__EOF__'
+python3 - "$IN_FILE" "$OUT_FILE" "$CSS_FILE" "$LINK_REWRITE" "$TITLE" <<'__EOF__'
 import sys, html
 from urllib.parse import urlsplit, urlunsplit
 try:
@@ -49,7 +53,7 @@ except ImportError:
     sys.exit("md2html.sh: python 'markdown_it' or 'mdit_py_plugins' module not found; "
              "try 'sudo apt install python3-markdown-it python3-mdit-py-plugins'")
 
-in_file, html_file, css_file, link_rewrite = sys.argv[1:5]
+in_file, html_file, css_file, link_rewrite, title = sys.argv[1:6]
 
 DEFAULT_CSS = """
 body { font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
@@ -106,7 +110,7 @@ if link_rewrite == "1":
     rewrite_links(tokens)
 
 body = md.renderer.render(tokens, md.options, env)
-title = html.escape(in_file)
+title = html.escape(title)
 with open(html_file, "w", encoding="utf-8") as f:
     f.write(f"""<!DOCTYPE html>
 <html><head><meta charset="utf-8"><title>{title}</title>

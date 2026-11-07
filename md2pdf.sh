@@ -7,12 +7,13 @@
 
 usage() {
   cat <<__EOF__ 1>&2
-Usage: md2pdf.sh [-h] [-k] [-c css_file] [-o out.pdf] in.md
+Usage: md2pdf.sh [-h] [-k] [-c css_file] [-o out.pdf] [-t title] in.md
 Where:
   -h : print help.
   -k : keep the intermediate HTML file (written next to the PDF).
   -c css_file : use css_file instead of the built-in style sheet.
   -o out.pdf : output file (default: in.md with .md replaced by .pdf).
+  -t title : document title (PDF metadata; default: in.md).
   in.md : input markdown file.
 Environment:
   MD2PDF_BROWSER : path to chromium-compatible browser (overrides search).
@@ -22,13 +23,15 @@ __EOF__
 
 OUT_FILE=""
 CSS_FILE=""
+TITLE=""
 KEEP_HTML=0
-while getopts "hkc:o:" OPTION; do
+while getopts "hkc:o:t:" OPTION; do
   case $OPTION in
     h) usage ;;
     k) KEEP_HTML=1 ;;
     c) CSS_FILE="$OPTARG" ;;
     o) OUT_FILE="$OPTARG" ;;
+    t) TITLE="$OPTARG" ;;
     *) usage ;;
   esac
 done
@@ -84,7 +87,7 @@ if [ "$KEEP_HTML" -eq 0 ]; then trap 'rm -f "$HTML_FILE"' EXIT; fi
 MD2HTML="$(dirname "$(readlink -f "$0")")/md2html.sh"
 if [ ! -x "$MD2HTML" ]; then MD2HTML=$(command -v md2html.sh); fi
 if [ -z "$MD2HTML" ]; then echo "md2pdf.sh: md2html.sh not found" 1>&2; exit 1; fi
-"$MD2HTML" ${CSS_FILE:+-c "$CSS_FILE"} -o "$HTML_FILE" "$IN_FILE" || exit 1
+"$MD2HTML" ${CSS_FILE:+-c "$CSS_FILE"} ${TITLE:+-t "$TITLE"} -o "$HTML_FILE" "$IN_FILE" || exit 1
 
 # Chromium's own path for the HTML must be absolute.
 HTML_ABS=$(cd "$IN_DIR" && pwd)/$(basename "$HTML_FILE")

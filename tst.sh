@@ -84,6 +84,11 @@ check "html: blockquote" has "$H" '<blockquote>'
 check "html: image" has "$H" '<img src="img.png" alt="alt text"'
 check "html: internal link" has "$H" '<a href="#hello-world">link</a>'
 check "html: built-in css" has "$H" 'border-collapse'
+check "html: default title" has "$H" "<title>$TST_DIR/in/t.md</title>"
+
+"$MD2HTML" -t 'My <Doc> & "Co"' -o "$TST_DIR/t.html" "$TST_DIR/in/t.md"; RC=$?
+check "md2html -t exits 0" [ $RC -eq 0 ]
+check "md2html -t sets escaped title" has "$TST_DIR/t.html" '<title>My &lt;Doc&gt; &amp; &quot;Co&quot;</title>'
 
 "$MD2HTML" -c "$TST_DIR/in/my.css" -o "$TST_DIR/c.html" "$TST_DIR/in/t.md"; RC=$?
 check "md2html -c -o exits 0" [ $RC -eq 0 ]
@@ -156,7 +161,18 @@ check "md2pdf -c -k -o exits 0" [ $RC -eq 0 ]
 check "md2pdf -o writes named file" is_pdf "$TST_DIR/out/x.pdf"
 check "md2pdf -k -o keeps html next to pdf" [ -s "$TST_DIR/out/x.html" ]
 check "md2pdf -c uses css file" has "$TST_DIR/out/x.html" '#123456'
+check "md2pdf default title" has "$TST_DIR/out/x.html" "<title>$TST_DIR/in/t.md</title>"
 check "md2pdf leaves no temp files (-o)" no_temps "$TST_DIR/in"
+
+"$MD2PDF" -k -t "PDF Title Test" -o "$TST_DIR/out/y.pdf" "$TST_DIR/in/t.md"; RC=$?
+check "md2pdf -t exits 0" [ $RC -eq 0 ]
+check "md2pdf -t sets html title" has "$TST_DIR/out/y.html" '<title>PDF Title Test</title>'
+if command -v pdfinfo >/dev/null 2>&1; then
+  pdfinfo "$TST_DIR/out/y.pdf" >"$TST_DIR/info"
+  check "md2pdf -t sets pdf title" has "$TST_DIR/info" "PDF Title Test"
+else
+  echo "skip: pdf title check (pdfinfo not installed)"
+fi
 
 "$MD2PDF" "$TST_DIR/nonexistent.md" 2>"$TST_DIR/err"; RC=$?
 check "md2pdf missing input exits 1" [ $RC -eq 1 ]
